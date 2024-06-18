@@ -1,5 +1,5 @@
 # Use the official Python image from the Docker Hub
-FROM python:3.9-slim
+FROM python:3.8-slim
 
 # Install system dependencies
 RUN apt-get update && \
@@ -16,28 +16,24 @@ RUN apt-get update && \
     libasound2-dev \
     libportaudio2 \
     libportaudiocpp0 \
-    portaudio19-dev \
-    alsa-utils && \
+    portaudio19-dev && \
     apt-get clean
 
-# Set the working directory in the container
+# Set the working directory
 WORKDIR /app
 
-# Copy the requirements file into the container
-COPY requirements.txt .
+# Copy the current directory contents into the container at /app
+COPY . /app
 
-# Install the dependencies
-RUN pip install --no-cache-dir -r requirements.txt
+# Install Python dependencies
+RUN pip install --upgrade pip && \
+    pip install -r requirements.txt
 
-# Copy the entire app directory contents into the container
-COPY . .
+# Make port 80 available to the world outside this container
+EXPOSE 80
 
-# Verify available audio devices
-COPY check_audio.py .
-RUN python check_audio.py
+# Define environment variable
+ENV NAME World
 
-# Expose the port that Streamlit runs on
-EXPOSE 8501
-
-# Command to run the app
-CMD ["streamlit", "run", "app.py", "--server.port=8501", "--server.address=0.0.0.0"]
+# Run app.py when the container launches
+CMD ["python", "app.py"]
