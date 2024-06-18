@@ -29,11 +29,20 @@ COPY . /app
 RUN pip install --upgrade pip && \
     pip install -r requirements.txt
 
-# Make port 80 available to the world outside this container
-EXPOSE 80
+ # Verify available audio devices
+COPY check_audio.py .
+RUN python check_audio.py
 
-# Define environment variable
-ENV NAME World
+# Expose the port that Streamlit runs on
+EXPOSE 8501
 
-# Run app.py when the container launches
-CMD ["python", "app.py"]
+# Command to run the app
+CMD ["streamlit", "run", "app.py", "--server.port=8501", "--server.address=0.0.0.0"]
+# # Make port 80 available to the world outside this container
+# EXPOSE 80
+
+# # Define environment variable
+# ENV NAME World
+
+# # Run app.py when the container launches
+# CMD ["python", "app.py"]
