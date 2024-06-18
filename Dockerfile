@@ -29,10 +29,6 @@ COPY . /app
 RUN pip install --upgrade pip && \
     pip install -r requirements.txt
 
- # Verify available audio devices
-COPY check_audio.py .
-RUN python check_audio.py
-
 # Expose the port that Streamlit runs on
 EXPOSE 8501
 
