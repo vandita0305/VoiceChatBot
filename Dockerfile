@@ -1,5 +1,5 @@
 # Use the official Python image from the Docker Hub
-FROM python:3.8-slim
+FROM python:3.9-slim
 
 # Install system dependencies
 RUN apt-get update && \
@@ -32,13 +32,11 @@ RUN pip install --upgrade pip && \
 # Expose the port that Streamlit runs on
 EXPOSE 8501
 
+# Install PortAudio
+RUN apt-get install -y libportaudio2 libportaudiocpp0 portaudio19-dev
+
+# Install sounddevice
+RUN pip install sounddevice
+
 # Command to run the app
 CMD ["streamlit", "run", "app.py", "--server.port=8501", "--server.address=0.0.0.0"]
-# # Make port 80 available to the world outside this container
-# EXPOSE 80
-
-# # Define environment variable
-# ENV NAME World
-
-# # Run app.py when the container launches
-# CMD ["python", "app.py"]
