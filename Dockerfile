@@ -16,7 +16,8 @@ RUN apt-get update && \
     libasound2-dev \
     libportaudio2 \
     libportaudiocpp0 \
-    portaudio19-dev && \
+    portaudio19-dev \
+    alsa-utils && \
     apt-get clean
 
 # Set the working directory in the container
@@ -30,6 +31,10 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy the entire app directory contents into the container
 COPY . .
+
+# Verify available audio devices
+COPY check_audio.py .
+RUN python check_audio.py
 
 # Expose the port that Streamlit runs on
 EXPOSE 8501
