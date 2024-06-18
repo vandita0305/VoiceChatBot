@@ -1,11 +1,10 @@
 numpy==1.25.0
 pygame==2.5.2
-streamlit==1.24.0
-python-dotenv==1.0.0
-gtts==2.3.1
-sounddevice==0.4.6
-deepgram-sdk==1.1.0 #ensure they are installed in the system
-groq==0.1.3 #ensure they are installed in the system
-requests==2.31.0
-aioconsole==0.1.20
+streamlit==1.29.0
+python-dotenv==1.0.1
+gtts==2.5.1
+sounddevice==0.4.7
+deepgram-sdk==2.12.0 #ensure they are installed in the system
+groq==0.9.0 #ensure they are installed in the system
+
 
