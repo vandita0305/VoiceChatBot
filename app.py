@@ -5,28 +5,35 @@ import numpy as np
 import wave
 import pygame
 import streamlit as st
+from flask import Flask, request, jsonify
 from deepgram import Deepgram
 from groq import Groq
 from dotenv import load_dotenv
 from gtts import gTTS
+import base64
+import openai
 
 # Load API keys from .env file
 load_dotenv()
 DEEPGRAM_API_KEY = os.getenv("DEEPGRAM_API_KEY")
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
-if not DEEPGRAM_API_KEY or not GROQ_API_KEY:
-    raise ValueError("API keys for Deepgram and Groq must be set in the .env file")
+if not DEEPGRAM_API_KEY or not GROQ_API_KEY or not OPENAI_API_KEY:
+    raise ValueError("API keys for Deepgram, Groq, and OpenAI must be set in the .env file")
 
 # Initialize Deepgram and Groq clients
 dg_client = Deepgram(DEEPGRAM_API_KEY)
 groq_client = Groq(api_key=GROQ_API_KEY)
+openai.api_key = OPENAI_API_KEY
 
 # Audio recording parameters
 DURATION = 3  # seconds
 SAMPLERATE = 16000
 FILENAME = "output.wav"
 RESPONSE_AUDIO = "response.mp3"
+
+app = Flask(__name__)
 
 async def recognize_audio_deepgram(filename):
     with open(filename, 'rb') as audio:
@@ -58,7 +65,7 @@ def generate_response(prompt):
         top_p=1,
         stream=False,
         stop=None,
-    )
+    ) 
     return response.choices[0].message.content.strip()
 
 def play_response(text):
@@ -97,5 +104,30 @@ def run_streamlit_app():
     if st.button("Start Conversation"):
         asyncio.run(main())
 
-if __name__  == "__main__":
-    run_streamlit_app()
+# TTS endpoint for handling text-to-speech requests
+@app.route('/tts', methods=['POST'])
+def tts():
+    data = request.json
+    text = data.get('text')
+    if not text:
+        return jsonify({"error": "Text is required"}), 400
+    
+    try:
+        audio_data = openai.Audio.create(
+            model="tts-1",
+            voice="alloy",
+            input=text
+        )['audio']
+        b64_audio = base64.b64encode(audio_data).decode()
+        return jsonify({"audio": b64_audio})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+if __name__ == '__main__':
+    # Run the Streamlit app in a separate thread
+    from threading import Thread
+    streamlit_thread = Thread(target=run_streamlit_app)
+    streamlit_thread.start()
+    
+    # Run the Flask app
+    app.run(host='0.0.0.0', port=5000)
